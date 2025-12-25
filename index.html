@@ -1686,12 +1686,14 @@
                             });
                           }}
                           style={{
-                            backgroundColor: isSelected ? preset.color : '#f3f4f6',
+                            backgroundColor: preset.color,
                             borderColor: preset.color,
-                            color: isSelected ? '#fff' : '#1f2937'
+                            color: '#fff',
+                            opacity: isSelected ? 1 : 0.6,
+                            fontWeight: isSelected ? 'bold' : 'normal'
                           }}
-                          className={`border-4 rounded-lg p-4 text-center font-bold transition hover:shadow-lg ${
-                            isSelected ? 'shadow-xl scale-105' : ''
+                          className={`border-4 rounded-lg p-4 text-center font-bold transition hover:shadow-lg hover:opacity-100 ${
+                            isSelected ? 'shadow-xl scale-110 ring-4 ring-white' : ''
                           }`}
                         >
                           <div className="text-2xl mb-1">{presetNum}</div>
