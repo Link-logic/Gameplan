@@ -300,8 +300,24 @@
     );
 
     const MultiplayerLinkLogic = () => {
-      const [screen, setScreen] = useState('splash');
-      const [playerName, setPlayerName] = useState('');
+      // Check if user is already registered
+      const [screen, setScreen] = useState(() => {
+        const registered = localStorage.getItem('linkLogicRegistration');
+        return registered ? 'welcome' : 'splash';
+      });
+      const [playerName, setPlayerName] = useState(() => {
+        const registration = localStorage.getItem('linkLogicRegistration');
+        return registration ? JSON.parse(registration).playerName : '';
+      });
+      
+      // Registration fields
+      const [regName, setRegName] = useState('');
+      const [regCell, setRegCell] = useState('');
+      const [regEmail, setRegEmail] = useState('');
+      const [regPlayerName, setRegPlayerName] = useState('');
+      const [playerNameAvailable, setPlayerNameAvailable] = useState(null);
+      const [checkingPlayerName, setCheckingPlayerName] = useState(false);
+      
       const [roomCode, setRoomCode] = useState('');
       const [joinRoomInput, setJoinRoomInput] = useState('');
       const [playerId, setPlayerId] = useState(null);
@@ -1476,7 +1492,7 @@
               </div>
               
               <button
-                onClick={() => setScreen('welcome')}
+                onClick={() => setScreen('register')}
                 className="enter-button bg-gold hover:bg-gold-dark text-dark-navy px-16 py-5 rounded-full font-bold text-3xl shadow-2xl transition-all hover:shadow-gold/50"
                 style={{
                   textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
@@ -1489,6 +1505,170 @@
               <p className="text-white text-lg mt-6 opacity-90 font-medium">
                 A Multiplayer Word Connection Game
               </p>
+            </div>
+          </div>
+        );
+      }
+      
+      // Registration Screen (for new players only)
+      if (screen === 'register') {
+        // Check player name availability in Firebase
+        const checkPlayerNameAvailability = async (name) => {
+          if (!name || name.length < 3) {
+            setPlayerNameAvailable(null);
+            return;
+          }
+          
+          setCheckingPlayerName(true);
+          
+          try {
+            // Search all rooms for this player name
+            const roomsRef = database.ref('rooms');
+            const snapshot = await roomsRef.once('value');
+            const rooms = snapshot.val() || {};
+            
+            // Check if player name exists in any room
+            let nameExists = false;
+            Object.values(rooms).forEach(room => {
+              if (room.players) {
+                Object.values(room.players).forEach(player => {
+                  if (player.name && player.name.toLowerCase() === name.toLowerCase()) {
+                    nameExists = true;
+                  }
+                });
+              }
+            });
+            
+            setPlayerNameAvailable(!nameExists);
+          } catch (error) {
+            console.error('Error checking player name:', error);
+            setPlayerNameAvailable(null);
+          }
+          
+          setCheckingPlayerName(false);
+        };
+        
+        // Save registration
+        const handleRegistration = () => {
+          if (!regName.trim() || !regCell.trim() || !regPlayerName.trim()) {
+            alert('Please fill in all required fields (Name, Cell, Game Player Name)');
+            return;
+          }
+          
+          if (playerNameAvailable === false) {
+            alert('This Game Player Name is already taken. Please choose another.');
+            return;
+          }
+          
+          // Save to localStorage
+          const registration = {
+            name: regName.trim(),
+            cell: regCell.trim(),
+            email: regEmail.trim(),
+            playerName: regPlayerName.trim(),
+            registeredAt: Date.now()
+          };
+          
+          localStorage.setItem('linkLogicRegistration', JSON.stringify(registration));
+          setPlayerName(regPlayerName.trim());
+          setScreen('welcome');
+        };
+        
+        return (
+          <div className="min-h-screen p-6 flex items-center justify-center" style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)'}}>
+            <div className="max-w-md w-full bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-8 border-4 border-white/50">
+              <div className="text-center mb-6">
+                <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Register to Play
+                </h1>
+                <p className="text-gray-600">Create your player profile</p>
+              </div>
+              
+              {/* Your Name */}
+              <div className="mb-4">
+                <label className="block font-bold mb-2 text-gray-700">Your Name: *</label>
+                <input
+                  type="text"
+                  value={regName}
+                  onChange={(e) => setRegName(e.target.value)}
+                  placeholder="Enter your real name"
+                  className="w-full p-3 border-3 border-purple-300 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                  maxLength={50}
+                />
+              </div>
+              
+              {/* Your Cell */}
+              <div className="mb-4">
+                <label className="block font-bold mb-2 text-gray-700">Your Cell: *</label>
+                <input
+                  type="tel"
+                  value={regCell}
+                  onChange={(e) => setRegCell(e.target.value)}
+                  placeholder="(555) 123-4567"
+                  className="w-full p-3 border-3 border-purple-300 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                  maxLength={20}
+                />
+              </div>
+              
+              {/* Your Email */}
+              <div className="mb-4">
+                <label className="block font-bold mb-2 text-gray-700">Your Email: <span className="text-sm text-gray-500">(optional)</span></label>
+                <input
+                  type="email"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full p-3 border-3 border-purple-300 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                  maxLength={100}
+                />
+              </div>
+              
+              {/* Game Player Name */}
+              <div className="mb-4">
+                <label className="block font-bold mb-2 text-gray-700">Select a Game Player Name: *</label>
+                <input
+                  type="text"
+                  value={regPlayerName}
+                  onChange={(e) => {
+                    setRegPlayerName(e.target.value);
+                    // Debounce checking
+                    clearTimeout(window.playerNameCheckTimeout);
+                    window.playerNameCheckTimeout = setTimeout(() => {
+                      checkPlayerNameAvailability(e.target.value);
+                    }, 500);
+                  }}
+                  placeholder="Choose your game name"
+                  className="w-full p-3 border-3 border-purple-300 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                  maxLength={20}
+                />
+                {checkingPlayerName && (
+                  <p className="text-sm text-gray-500 mt-1">Checking availability...</p>
+                )}
+                {!checkingPlayerName && playerNameAvailable === true && regPlayerName.length >= 3 && (
+                  <p className="text-sm text-green-600 mt-1">✓ This name is available!</p>
+                )}
+                {!checkingPlayerName && playerNameAvailable === false && (
+                  <p className="text-sm text-red-600 mt-1">✗ This name is already taken</p>
+                )}
+              </div>
+              
+              {/* Buttons */}
+              <button
+                onClick={handleRegistration}
+                disabled={!regName.trim() || !regCell.trim() || !regPlayerName.trim() || playerNameAvailable === false}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-4 rounded-xl font-bold text-xl mb-3 transition-all shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+              >
+                LET'S PLAY!
+              </button>
+              
+              <button
+                onClick={() => setScreen('instructions')}
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white py-3 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl"
+              >
+                📖 Game Instructions
+              </button>
+              
+              <p className="text-xs text-gray-500 text-center mt-4">* Required fields</p>
             </div>
           </div>
         );
