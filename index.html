@@ -1971,20 +1971,6 @@
                         </div>
                       </div>
                     )}
-                          <input
-                            type="number"
-                            min="0"
-                            max="10"
-                            value={customPresetSettings?.bonusWords || PRESETS[selectedPreset].bonusWords}
-                            onChange={(e) => setCustomPresetSettings({
-                              ...customPresetSettings,
-                              bonusWords: parseInt(e.target.value) || PRESETS[selectedPreset].bonusWords
-                            })}
-                            className="w-full p-2 border-2 border-gray-300 rounded"
-                          />
-                        </div>
-                      </div>
-                    )}
                     
                     {/* All 3 Buttons Always Visible */}
                     <div className="flex gap-2">
