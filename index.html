@@ -1861,12 +1861,16 @@
                           key={presetNum}
                           onClick={() => {
                             setSelectedPreset(presetNum);
+                            // Use custom settings if editing this preset, otherwise use defaults
+                            const settingsToUse = (presetNum === selectedPreset && customPresetSettings) 
+                              ? customPresetSettings 
+                              : preset;
                             updateConfig({
                               ...gameData.config,
-                              numWords: preset.numWords,
-                              roundTimer: preset.roundTimer,
-                              numRounds: preset.numRounds,
-                              bonusWords: preset.bonusWords,
+                              numWords: settingsToUse.numWords,
+                              roundTimer: settingsToUse.roundTimer,
+                              numRounds: settingsToUse.numRounds,
+                              bonusWords: settingsToUse.bonusWords,
                               difficulty: preset.difficulty,
                               presetLevel: presetNum
                             });
@@ -1992,7 +1996,20 @@
                         EDIT
                       </button>
                       <button
-                        onClick={() => setIsEditingPreset(false)}
+                        onClick={() => {
+                          setIsEditingPreset(false);
+                          // Update game config with custom settings
+                          if (customPresetSettings) {
+                            updateConfig({
+                              ...gameData.config,
+                              numWords: customPresetSettings.numWords,
+                              roundTimer: customPresetSettings.roundTimer,
+                              numRounds: customPresetSettings.numRounds,
+                              bonusWords: customPresetSettings.bonusWords,
+                              presetLevel: selectedPreset
+                            });
+                          }
+                        }}
                         disabled={!isEditingPreset}
                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -2002,6 +2019,17 @@
                         onClick={() => {
                           setCustomPresetSettings(null);
                           setIsEditingPreset(false);
+                          // Reset to preset defaults
+                          const preset = PRESETS[selectedPreset];
+                          updateConfig({
+                            ...gameData.config,
+                            numWords: preset.numWords,
+                            roundTimer: preset.roundTimer,
+                            numRounds: preset.numRounds,
+                            bonusWords: preset.bonusWords,
+                            difficulty: preset.difficulty,
+                            presetLevel: selectedPreset
+                          });
                         }}
                         className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-bold transition"
                       >
