@@ -1709,10 +1709,9 @@
                   </div>
                   
                   <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border-2 border-blue-200">
-                    <div className="flex justify-between items-center mb-3">
-                      <h4 className="font-bold">Preset {selectedPreset} Settings:</h4>
-                      <div className="text-sm"><strong>Level:</strong> {PRESETS[selectedPreset].description}</div>
-                    </div>
+                    <h4 className="font-bold mb-3">
+                      Preset {selectedPreset} Settings: <span className="font-normal text-sm">Level: {PRESETS[selectedPreset].description}</span>
+                    </h4>
                     
                     {!isEditingPreset ? (
                       // Display mode
