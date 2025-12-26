@@ -430,6 +430,8 @@
       };
       
       const [selectedPreset, setSelectedPreset] = useState(4); // Default to Preset 4 (medium)
+      const [isEditingPreset, setIsEditingPreset] = useState(false);
+      const [customPresetSettings, setCustomPresetSettings] = useState(null);
       
       // Sound effects using Web Audio API
       const playSound = (type) => {
@@ -731,13 +733,16 @@
         const newPlayerId = Date.now().toString();
         const preset = PRESETS[selectedPreset];
         
+        // Use custom settings if they exist, otherwise use preset defaults
+        const settings = customPresetSettings || preset;
+        
         const roomData = {
           hostId: newPlayerId,
           config: {
-            numWords: preset.numWords,
-            roundTimer: preset.roundTimer,
-            numRounds: preset.numRounds,
-            bonusWords: preset.bonusWords,
+            numWords: settings.numWords,
+            roundTimer: settings.roundTimer,
+            numRounds: settings.numRounds,
+            bonusWords: settings.bonusWords,
             points: { 2: 2, 3: 4, 4: 8, 5: 16 },
             difficulty: preset.difficulty,
             presetLevel: selectedPreset
@@ -1704,13 +1709,116 @@
                   </div>
                   
                   <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border-2 border-blue-200">
-                    <h4 className="font-bold mb-2">Preset {selectedPreset} Settings:</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div><strong>Words:</strong> {PRESETS[selectedPreset].numWords}</div>
-                      <div><strong>Timer:</strong> {PRESETS[selectedPreset].roundTimer}s</div>
-                      <div><strong>Rounds:</strong> {PRESETS[selectedPreset].numRounds}</div>
-                      <div><strong>Bonus Words:</strong> {PRESETS[selectedPreset].bonusWords} ⭐</div>
-                      <div className="col-span-2"><strong>Level:</strong> {PRESETS[selectedPreset].description}</div>
+                    <h4 className="font-bold mb-3">Preset {selectedPreset} Settings:</h4>
+                    
+                    {!isEditingPreset ? (
+                      // Display mode
+                      <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+                        <div><strong>Words:</strong> {customPresetSettings?.numWords || PRESETS[selectedPreset].numWords}</div>
+                        <div><strong>Timer:</strong> {customPresetSettings?.roundTimer || PRESETS[selectedPreset].roundTimer}s</div>
+                        <div><strong>Rounds:</strong> {customPresetSettings?.numRounds || PRESETS[selectedPreset].numRounds}</div>
+                        <div><strong>Bonus Words:</strong> {customPresetSettings?.bonusWords || PRESETS[selectedPreset].bonusWords} ⭐</div>
+                        <div className="col-span-2"><strong>Level:</strong> {PRESETS[selectedPreset].description}</div>
+                      </div>
+                    ) : (
+                      // Edit mode
+                      <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+                        <div>
+                          <label className="block font-semibold mb-1">Words:</label>
+                          <input
+                            type="number"
+                            min="8"
+                            max="30"
+                            value={customPresetSettings?.numWords || PRESETS[selectedPreset].numWords}
+                            onChange={(e) => setCustomPresetSettings({
+                              ...customPresetSettings,
+                              numWords: parseInt(e.target.value) || PRESETS[selectedPreset].numWords
+                            })}
+                            className="w-full p-2 border-2 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold mb-1">Timer (seconds):</label>
+                          <input
+                            type="number"
+                            min="30"
+                            max="300"
+                            value={customPresetSettings?.roundTimer || PRESETS[selectedPreset].roundTimer}
+                            onChange={(e) => setCustomPresetSettings({
+                              ...customPresetSettings,
+                              roundTimer: parseInt(e.target.value) || PRESETS[selectedPreset].roundTimer
+                            })}
+                            className="w-full p-2 border-2 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold mb-1">Rounds:</label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="10"
+                            value={customPresetSettings?.numRounds || PRESETS[selectedPreset].numRounds}
+                            onChange={(e) => setCustomPresetSettings({
+                              ...customPresetSettings,
+                              numRounds: parseInt(e.target.value) || PRESETS[selectedPreset].numRounds
+                            })}
+                            className="w-full p-2 border-2 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold mb-1">Bonus Words:</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            value={customPresetSettings?.bonusWords || PRESETS[selectedPreset].bonusWords}
+                            onChange={(e) => setCustomPresetSettings({
+                              ...customPresetSettings,
+                              bonusWords: parseInt(e.target.value) || PRESETS[selectedPreset].bonusWords
+                            })}
+                            className="w-full p-2 border-2 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div className="col-span-2"><strong>Level:</strong> {PRESETS[selectedPreset].description}</div>
+                      </div>
+                    )}
+                    
+                    {/* Buttons */}
+                    <div className="flex gap-2">
+                      {!isEditingPreset ? (
+                        <button
+                          onClick={() => {
+                            setIsEditingPreset(true);
+                            if (!customPresetSettings) {
+                              setCustomPresetSettings({
+                                numWords: PRESETS[selectedPreset].numWords,
+                                roundTimer: PRESETS[selectedPreset].roundTimer,
+                                numRounds: PRESETS[selectedPreset].numRounds,
+                                bonusWords: PRESETS[selectedPreset].bonusWords
+                              });
+                            }
+                          }}
+                          className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold transition"
+                        >
+                          EDIT
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setIsEditingPreset(false)}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold transition"
+                        >
+                          SAVE
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setCustomPresetSettings(null);
+                          setIsEditingPreset(false);
+                        }}
+                        className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-bold transition"
+                      >
+                        RESET
+                      </button>
                     </div>
                   </div>
                 </div>
