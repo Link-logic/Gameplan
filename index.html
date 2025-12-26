@@ -300,14 +300,12 @@
     );
 
     const MultiplayerLinkLogic = () => {
-      // Check if user is already registered
-      const [screen, setScreen] = useState(() => {
-        const registered = localStorage.getItem('linkLogicRegistration');
-        return registered ? 'welcome' : 'splash';
-      });
+      // Always start at splash screen
+      const [screen, setScreen] = useState('splash');
       const [playerName, setPlayerName] = useState(() => {
         const registration = localStorage.getItem('linkLogicRegistration');
         return registration ? JSON.parse(registration).playerName : '';
+
       });
       
       // Registration fields
@@ -1492,7 +1490,10 @@
               </div>
               
               <button
-                onClick={() => setScreen('register')}
+                onClick={() => {
+                  const registered = localStorage.getItem('linkLogicRegistration');
+                  setScreen(registered ? 'welcome' : 'register');
+                }}
                 className="enter-button bg-gold hover:bg-gold-dark text-dark-navy px-16 py-5 rounded-full font-bold text-3xl shadow-2xl transition-all hover:shadow-gold/50"
                 style={{
                   textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
@@ -1912,8 +1913,10 @@
                             max="30"
                             value={customPresetSettings?.numWords || PRESETS[selectedPreset].numWords}
                             onChange={(e) => setCustomPresetSettings({
-                              ...customPresetSettings,
-                              numWords: parseInt(e.target.value) || PRESETS[selectedPreset].numWords
+                              numWords: parseInt(e.target.value) || PRESETS[selectedPreset].numWords,
+                              roundTimer: customPresetSettings?.roundTimer || PRESETS[selectedPreset].roundTimer,
+                              numRounds: customPresetSettings?.numRounds || PRESETS[selectedPreset].numRounds,
+                              bonusWords: customPresetSettings?.bonusWords || PRESETS[selectedPreset].bonusWords
                             })}
                             className="w-full p-2 border-2 border-gray-300 rounded"
                           />
@@ -1926,8 +1929,10 @@
                             max="300"
                             value={customPresetSettings?.roundTimer || PRESETS[selectedPreset].roundTimer}
                             onChange={(e) => setCustomPresetSettings({
-                              ...customPresetSettings,
-                              roundTimer: parseInt(e.target.value) || PRESETS[selectedPreset].roundTimer
+                              numWords: customPresetSettings?.numWords || PRESETS[selectedPreset].numWords,
+                              roundTimer: parseInt(e.target.value) || PRESETS[selectedPreset].roundTimer,
+                              numRounds: customPresetSettings?.numRounds || PRESETS[selectedPreset].numRounds,
+                              bonusWords: customPresetSettings?.bonusWords || PRESETS[selectedPreset].bonusWords
                             })}
                             className="w-full p-2 border-2 border-gray-300 rounded"
                           />
@@ -1940,14 +1945,32 @@
                             max="10"
                             value={customPresetSettings?.numRounds || PRESETS[selectedPreset].numRounds}
                             onChange={(e) => setCustomPresetSettings({
-                              ...customPresetSettings,
-                              numRounds: parseInt(e.target.value) || PRESETS[selectedPreset].numRounds
+                              numWords: customPresetSettings?.numWords || PRESETS[selectedPreset].numWords,
+                              roundTimer: customPresetSettings?.roundTimer || PRESETS[selectedPreset].roundTimer,
+                              numRounds: parseInt(e.target.value) || PRESETS[selectedPreset].numRounds,
+                              bonusWords: customPresetSettings?.bonusWords || PRESETS[selectedPreset].bonusWords
                             })}
                             className="w-full p-2 border-2 border-gray-300 rounded"
                           />
                         </div>
                         <div>
                           <label className="block font-semibold mb-1">Bonus Words:</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            value={customPresetSettings?.bonusWords || PRESETS[selectedPreset].bonusWords}
+                            onChange={(e) => setCustomPresetSettings({
+                              numWords: customPresetSettings?.numWords || PRESETS[selectedPreset].numWords,
+                              roundTimer: customPresetSettings?.roundTimer || PRESETS[selectedPreset].roundTimer,
+                              numRounds: customPresetSettings?.numRounds || PRESETS[selectedPreset].numRounds,
+                              bonusWords: parseInt(e.target.value) || PRESETS[selectedPreset].bonusWords
+                            })}
+                            className="w-full p-2 border-2 border-gray-300 rounded"
+                          />
+                        </div>
+                      </div>
+                    )}
                           <input
                             type="number"
                             min="0"
