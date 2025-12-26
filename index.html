@@ -339,7 +339,7 @@
       const PRESETS = {
         1: { 
           name: 'Preset 1', 
-          color: '#00d9ff', // Bright Cyan (Easy)
+          color: '#ffd700', // Yellow
           difficulty: 'children', 
           numWords: 22, 
           roundTimer: 120, 
@@ -349,7 +349,7 @@
         },
         2: { 
           name: 'Preset 2', 
-          color: '#0099ff', // Vivid Blue (Easy)
+          color: '#f5c842',
           difficulty: 'children', 
           numWords: 20, 
           roundTimer: 110, 
@@ -359,7 +359,7 @@
         },
         3: { 
           name: 'Preset 3', 
-          color: '#0066ff', // Royal Blue (Easy)
+          color: '#e6b82e',
           difficulty: 'children', 
           numWords: 18, 
           roundTimer: 100, 
@@ -369,7 +369,7 @@
         },
         4: { 
           name: 'Preset 4', 
-          color: '#ffdd00', // Bright Yellow (Medium)
+          color: '#ffa500',
           difficulty: 'adults', 
           numWords: 20, 
           roundTimer: 110, 
@@ -379,7 +379,7 @@
         },
         5: { 
           name: 'Preset 5', 
-          color: '#ffaa00', // Vivid Orange (Medium)
+          color: '#ff8c00',
           difficulty: 'adults', 
           numWords: 18, 
           roundTimer: 100, 
@@ -389,7 +389,7 @@
         },
         6: { 
           name: 'Preset 6', 
-          color: '#ff7700', // Bright Orange (Medium)
+          color: '#ff7700',
           difficulty: 'adults', 
           numWords: 16, 
           roundTimer: 90, 
@@ -399,7 +399,7 @@
         },
         7: { 
           name: 'Preset 7', 
-          color: '#ff3333', // Bright Red (Difficult)
+          color: '#ff4500',
           difficulty: 'beginners', 
           numWords: 18, 
           roundTimer: 100, 
@@ -409,7 +409,7 @@
         },
         8: { 
           name: 'Preset 8', 
-          color: '#ff0000', // Pure Red (Difficult)
+          color: '#dc143c',
           difficulty: 'beginners', 
           numWords: 16, 
           roundTimer: 90, 
@@ -419,7 +419,7 @@
         },
         9: { 
           name: 'Preset 9', 
-          color: '#cc0000', // Deep Red (Difficult)
+          color: '#b22222', // Red
           difficulty: 'beginners', 
           numWords: 14, 
           roundTimer: 80, 
@@ -1686,14 +1686,12 @@
                             });
                           }}
                           style={{
-                            backgroundColor: preset.color,
+                            backgroundColor: isSelected ? preset.color : '#f3f4f6',
                             borderColor: preset.color,
-                            color: '#fff',
-                            opacity: isSelected ? 1 : 0.6,
-                            fontWeight: isSelected ? 'bold' : 'normal'
+                            color: isSelected ? '#fff' : '#1f2937'
                           }}
-                          className={`border-4 rounded-lg p-4 text-center font-bold transition hover:shadow-lg hover:opacity-100 ${
-                            isSelected ? 'shadow-xl scale-110 ring-4 ring-white' : ''
+                          className={`border-4 rounded-lg p-4 text-center font-bold transition hover:shadow-lg ${
+                            isSelected ? 'shadow-xl scale-105' : ''
                           }`}
                         >
                           <div className="text-2xl mb-1">{presetNum}</div>
@@ -1921,7 +1919,8 @@
                                 : 'bg-white text-gray-800 border-blue-400'
                           } border-2 rounded-lg p-2 text-center font-semibold text-xs cursor-pointer hover:shadow-lg transition relative`}
                           style={isBonus && !isSelected ? {
-                            boxShadow: '0 0 15px rgba(251, 191, 36, 0.4)'
+                            boxShadow: '0 0 15px rgba(251, 191, 36, 0.4)',
+                            animation: 'pulse 2s ease-in-out infinite'
                           } : {}}
                         >
                           {isBonus && !isSelected && (
